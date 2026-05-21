@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Automotive Design News – Review & Select</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    margin-top: 10px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    vertical-align: top;
+    word-wrap: break-word;
+  }
+
+  th {
+    background: #f4f4f4;
+    font-weight: bold;
+  }
+
+  /* Column widths tuned for single-screen view */
+  th.col-select  { width: 5%;  text-align: center; }
+  th.col-article { width: 22%; }
+  th.col-source  { width: 13%; }
+  th.col-impact  { width: 20%; }
+  th.col-summary { width: 40%; }
+
+  td.col-select {
+    text-align: center;
+  }
+
+  tr.clickable-row {
+    cursor: pointer;
+  }
+
+  tr.clickable-row:hover {
+    background-color: #f9f9f9;
+  }
+
+  tr.selected {
+    background-color: #e6f2ff;
+  }
+
+  a.article-link {
+    color: #0066cc;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  a.article-link:hover {
+    text-decoration: underline;
+  }
+
+  button {
+    margin-right: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+</style>
+</head>
+
+<body>
+
+<h3>Automotive Design News – Review & Select</h3>
+
+<button onclick="showSelected()">Show Selected Only</button>
+<button onclick="showAll()">Show All</button>
+
+<table id="newsTable">
+  <thead>
+    <tr>
+      <th class="col-select">Select</th>
+      <th class="col-article">Article / Content</th>
+      <th class="col-source">Source</th>
+      <th class="col-impact">Brands / Categories / Geographies</th>
+      <th class="col-summary">Design Summary</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr class="clickable-row">
+      <td class="col-select">
+        <input type="checkbox">
+      </td>
+      <td class="col-article">
+        https://www.example.com/interior-ux-sdv
+          Rethinking Interior UX for Software‑Defined Vehicles
+        </a>
+      </td>
+      <td class="col-source">
+        Design Review
+      </td>
+      <td class="col-impact">
+        Global OEMs; passenger vehicles; North America, Europe
+      </td>
+      <td class="col-summary">
+        The article examines how software‑defined vehicle architectures are
+        forcing interior design teams to rethink UX ownership, screen hierarchy,
+        and collaboration with software organizations. It provides useful context
+        on how design intent is being preserved as vehicle interiors become
+        increasingly update‑driven.
+      </td>
+    </tr>
+
+    <tr class="clickable-row">
+      <td class="col-select">
+        <input type="checkbox">
+      </td>
+      <td class="col-article">
+        https://www.example.com/ai-sketching-design
+          AI‑Assisted Sketching in Global Design Studios
+        </a>
+      </td>
+      <td class="col-source">
+        Auto Design Journal
+      </td>
+      <td class="col-impact">
+        Design studios; multiple brands; global
+      </td>
+      <td class="col-summary">
+        This piece looks at how automotive design studios are integrating AI
+        sketching tools into early‑stage ideation workflows. It highlights both
+        productivity gains and emerging concerns around authorship, consistency,
+        and brand control that may influence future design processes.
+      </td>
+    </tr>
+
+    <tr class="clickable-row">
+      <td class="col-select">
+        <input type="checkbox">
+      </td>
+      <td class="col-article">
+        https://www.example.com/ev-exterior-divergence
+          Why EV Exterior Design Is Diverging Again
+        </a>
+      </td>
+      <td class="col-source">
+        Industry Commentary
+      </td>
+      <td class="col-impact">
+        EV brands; passenger vehicles; global markets
+      </td>
+      <td class="col-summary">
+        The commentary argues that early EV design convergence is giving way to
+        renewed visual differentiation as competition intensifies. It provides
+        useful perspective on how lighting, surfacing, and proportion strategies
+        are being used to reassert brand identity in the EV space.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+/* Row click toggles checkbox unless clicking checkbox or link */
+document.querySelectorAll(".clickable-row").forEach(row => {
+  row.addEventListener("click", function (e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "A") return;
+
+    const checkbox = row.querySelector("input[type='checkbox']");
+    checkbox.checked = !checkbox.checked;
+    row.classList.toggle("selected", checkbox.checked);
+  });
+});
+
+/* Keep highlight in sync when checkbox clicked directly */
+document.querySelectorAll("input[type='checkbox']").forEach(cb => {
+  cb.addEventListener("change", function () {
+    const row = cb.closest("tr");
+    row.classList.toggle("selected", cb.checked);
+  });
+});
+
+function showSelected() {
+  document.querySelectorAll("#newsTable tbody tr").forEach(row => {
+    const cb = row.querySelector("input[type='checkbox']");
+    row.style.display = cb.checked ? "" : "none";
+  });
+}
+
+function showAll() {
+  document.querySelectorAll("#newsTable tbody tr").forEach(row => {
+    row.style.display = "";
+  });
+}
+</script>
+
+</body>
+</html>
