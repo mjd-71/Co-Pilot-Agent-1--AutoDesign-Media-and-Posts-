@@ -67,6 +67,80 @@
     padding: 5px 10px;
     font-size: 12px;
   }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .controls {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .selection-info {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .submit-section {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f0f8ff;
+    border: 1px solid #0066cc;
+    border-radius: 4px;
+  }
+
+  .submission-list {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .submission-list h4 {
+    margin-top: 0;
+  }
+
+  .submission-item {
+    padding: 5px;
+    margin: 5px 0;
+    background-color: #f9f9f9;
+    border-left: 3px solid #0066cc;
+    padding-left: 8px;
+  }
+
+  .message {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+  }
+
+  .message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+  }
+
+  .message.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    display: block;
+  }
 </style>
 </head>
 
@@ -74,8 +148,11 @@
 
 <h3>Automotive Design News – Review & Select</h3>
 
-<button onclick="showSelected()">Show Selected Only</button>
-<button onclick="showAll()">Show All</button>
+<div class="controls">
+  <button onclick="showSelected()">Show Selected Only</button>
+  <button onclick="showAll()">Show All</button>
+  <span class="selection-info">Selected: <span id="selectionCount">0</span>/6</span>
+</div>
 
 <table id="newsTable">
   <thead>
@@ -94,7 +171,7 @@
         <input type="checkbox">
       </td>
       <td class="col-article">
-        https://www.example.com/interior-ux-sdv
+        <a href="https://www.example.com/interior-ux-sdv" class="article-link" target="_blank">
           Rethinking Interior UX for Software‑Defined Vehicles
         </a>
       </td>
@@ -118,7 +195,7 @@
         <input type="checkbox">
       </td>
       <td class="col-article">
-        https://www.example.com/ai-sketching-design
+        <a href="https://www.example.com/ai-sketching-design" class="article-link" target="_blank">
           AI‑Assisted Sketching in Global Design Studios
         </a>
       </td>
@@ -141,7 +218,7 @@
         <input type="checkbox">
       </td>
       <td class="col-article">
-        https://www.example.com/ev-exterior-divergence
+        <a href="https://www.example.com/ev-exterior-divergence" class="article-link" target="_blank">
           Why EV Exterior Design Is Diverging Again
         </a>
       </td>
@@ -161,6 +238,19 @@
   </tbody>
 </table>
 
+<div class="submit-section">
+  <button onclick="submitSelection()" id="submitBtn" disabled>
+    Submit Selection (2-6 articles)
+  </button>
+  <div id="message" class="message"></div>
+</div>
+
+<div class="submission-list">
+  <h4>Submission History</h4>
+  <div id="submissionHistory"></div>
+  <button onclick="clearHistory()" style="margin-top: 10px;">Clear History</button>
+</div>
+
 <script>
 /* Row click toggles checkbox unless clicking checkbox or link */
 document.querySelectorAll(".clickable-row").forEach(row => {
@@ -170,6 +260,7 @@ document.querySelectorAll(".clickable-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
     checkbox.checked = !checkbox.checked;
     row.classList.toggle("selected", checkbox.checked);
+    updateSelectionInfo();
   });
 });
 
@@ -178,8 +269,111 @@ document.querySelectorAll("input[type='checkbox']").forEach(cb => {
   cb.addEventListener("change", function () {
     const row = cb.closest("tr");
     row.classList.toggle("selected", cb.checked);
+    updateSelectionInfo();
   });
 });
+
+function updateSelectionInfo() {
+  const count = document.querySelectorAll("input[type='checkbox']:checked").length;
+  document.getElementById("selectionCount").textContent = count;
+  
+  const submitBtn = document.getElementById("submitBtn");
+  submitBtn.disabled = count < 2 || count > 6;
+}
+
+function getSelectedArticles() {
+  const selected = [];
+  document.querySelectorAll("#newsTable tbody tr").forEach(row => {
+    const checkbox = row.querySelector("input[type='checkbox']");
+    if (checkbox.checked) {
+      const title = row.querySelector(".col-article a")?.textContent?.trim() || 
+                    row.querySelector(".col-article")?.textContent?.trim();
+      const url = row.querySelector(".col-article a")?.href || "";
+      const source = row.querySelector(".col-source")?.textContent?.trim();
+      selected.push({
+        title: title,
+        url: url,
+        source: source,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  return selected;
+}
+
+function submitSelection() {
+  const selected = getSelectedArticles();
+  const count = selected.length;
+
+  if (count < 2 || count > 6) {
+    showMessage("Please select between 2 and 6 articles.", "error");
+    return;
+  }
+
+  // Save to localStorage
+  const submissions = JSON.parse(localStorage.getItem("articleSubmissions")) || [];
+  submissions.push({
+    id: Date.now(),
+    articles: selected,
+    submittedAt: new Date().toISOString()
+  });
+  localStorage.setItem("articleSubmissions", JSON.stringify(submissions));
+
+  showMessage("✓ Selection submitted successfully! " + count + " article(s) saved.", "success");
+  
+  // Reset selection
+  document.querySelectorAll("input[type='checkbox']").forEach(cb => {
+    cb.checked = false;
+    cb.closest("tr").classList.remove("selected");
+  });
+  updateSelectionInfo();
+  loadSubmissionHistory();
+}
+
+function loadSubmissionHistory() {
+  const submissions = JSON.parse(localStorage.getItem("articleSubmissions")) || [];
+  const historyDiv = document.getElementById("submissionHistory");
+  
+  if (submissions.length === 0) {
+    historyDiv.innerHTML = "<p><em>No submissions yet.</em></p>";
+    return;
+  }
+
+  let html = "";
+  submissions.reverse().forEach((submission, idx) => {
+    const date = new Date(submission.submittedAt);
+    const dateStr = date.toLocaleString();
+    html += `<div class="submission-item">
+      <strong>Submission ${submissions.length - idx}</strong> (${dateStr})<br>
+      Articles: ${submission.articles.length}<br>
+      <small style="color: #666;">`;
+    
+    submission.articles.forEach((article, i) => {
+      html += `${i + 1}. ${article.title}<br>`;
+    });
+    
+    html += `</small></div>`;
+  });
+  
+  historyDiv.innerHTML = html;
+}
+
+function clearHistory() {
+  if (confirm("Are you sure you want to clear all submission history?")) {
+    localStorage.removeItem("articleSubmissions");
+    loadSubmissionHistory();
+    showMessage("History cleared.", "success");
+  }
+}
+
+function showMessage(text, type) {
+  const msgDiv = document.getElementById("message");
+  msgDiv.textContent = text;
+  msgDiv.className = "message " + type;
+  setTimeout(() => {
+    msgDiv.className = "message";
+  }, 5000);
+}
 
 function showSelected() {
   document.querySelectorAll("#newsTable tbody tr").forEach(row => {
@@ -193,6 +387,11 @@ function showAll() {
     row.style.display = "";
   });
 }
+
+// Load submission history on page load
+window.addEventListener("load", () => {
+  loadSubmissionHistory();
+});
 </script>
 
 </body>
